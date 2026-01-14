@@ -1,48 +1,21 @@
 import './globals.css';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import AdsterraLayoutWrapper from '../components/AdsterraLayoutWrapper';
+import AdsterraScripts from '../components/ads/AdsterraScripts'; // Buat komponen baru
 
-export const metadata = {
-  title: 'LK21 | Watch Movies, Stream TV Series Free - Complete Movie Database',
-  description: 'LK21 is your ultimate movie database with 10,000+ movies, 5,000+ TV series, actor profiles, genre pages, and yearly archives. Discover, stream, and enjoy cinematic excellence with our comprehensive entertainment platform.',
-  keywords: 'movies, tv series, streaming, movie database, actors, genres, rankings, movie archives',
-  openGraph: {
-    title: 'LK21 | Complete Movie & TV Series Database',
-    description: 'Your ultimate destination for movies, TV series, actor profiles, and streaming information. Explore genres, yearly archives, and top rankings.',
-    url: 'https://lk21-watch.vercel.app',
-    siteName: 'LK21',
-    images: [
-      {
-        url: 'https://live.staticflickr.com/65535/55031700113_48357852dd_b.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'LK21 - Complete Movie Database',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: '@WatchStream123',
-    creator: '@WatchStream123',
-    title: 'LK21 | Complete Movie & TV Series Database',
-    description: 'Explore 10,000+ movies, 5,000+ TV series, actor profiles, and streaming guides on LK21.',
-    images: ['https://live.staticflickr.com/65535/55031700113_48357852dd_b.jpg'],
-  },
-  // Tambahkan tag meta eksplisit untuk Facebook
-  other: {
-    'fb:app_id': '100074345305108',
-  },
-};
+// ... metadata tetap sama ...
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-	  <head>
+      <head>
         {/* Tag verifikasi Google Search Console */}
         <meta name="google-site-verification" content="FDKxUmPZWUKjIGnNRw9xMFqhdUUR9wCX1_qB_YK5asM" />
+        
+        {/* Preconnect untuk Adsterra domain */}
+        <link rel="preconnect" href="https://fundingfashioned.com" />
+        <link rel="dns-prefetch" href="https://fundingfashioned.com" />
+        
         {/* Schema.org markup untuk Movie Database */}
         <script
           type="application/ld+json"
@@ -56,27 +29,46 @@ export default function RootLayout({ children }) {
               "logo": "https://live.staticflickr.com/65535/55031700113_48357852dd_b.jpg",
               "sameAs": [
                 "https://lk21-watch.vercel.app"
-              ]
+              ],
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://lk21-watch.vercel.app/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
             })
           }}
         />
       </head>
       <body>
-        <AdsterraLayoutWrapper>
-          <div className="flex flex-col min-h-screen bg-slate-900">
-            <header className="w-full max-w-7xl mx-auto px-4 py-4 sticky top-0 z-50 bg-slate-900 shadow-lg">
-              <Navbar />
-            </header>
-            <main className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 mt-2">
-              {children}
-            </main>
-            <footer className="w-full max-w-7xl mx-auto px-4 py-8">
-              {/* Tempatkan div Native Banner di sini, sebelum Footer */}
-              <div id="container-ad1ee1816ddebc11a35ac98d10fb7142"></div>
-              <Footer />
-            </footer>
-          </div>
-        </AdsterraLayoutWrapper>
+        <div className="flex flex-col min-h-screen bg-slate-900">
+          <header className="w-full max-w-7xl mx-auto px-4 py-4 sticky top-0 z-50 bg-slate-900 shadow-lg">
+            <Navbar />
+          </header>
+          
+          <main className="flex-grow w-full max-w-7xl mx-auto px-4 py-8 mt-2">
+            {children}
+          </main>
+          
+          <footer className="w-full max-w-7xl mx-auto px-4 py-8">
+            {/* HANYA SATU container untuk Native Banner */}
+            <div 
+              id="container-ad1ee1816ddebc11a35ac98d10fb7142"
+              className="mb-8 min-h-[250px] bg-gradient-to-r from-purple-900/10 to-blue-900/10 rounded-lg flex items-center justify-center"
+            >
+              <div className="text-center">
+                <div className="inline-flex items-center gap-2 bg-purple-600/20 px-4 py-2 rounded-full mb-3">
+                  <span className="text-purple-400">📢</span>
+                  <span className="text-purple-300 text-sm">Advertisement</span>
+                </div>
+                <p className="text-gray-400 text-sm">Loading advertisement...</p>
+              </div>
+            </div>
+            <Footer />
+          </footer>
+        </div>
+        
+        {/* Load semua scripts di client side */}
+        <AdsterraScripts />
       </body>
     </html>
   );
