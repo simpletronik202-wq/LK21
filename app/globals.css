@@ -302,11 +302,7 @@ html {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ==============================
-   ADSTERRA CUSTOM STYLES
-   ============================== */
-
-/* Native Banner Styles */
+/* Native Banner Container */
 #container-ad1ee1816ddebc11a35ac98d10fb7142 {
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -321,37 +317,63 @@ html {
   overflow: hidden !important;
 }
 
+/* Banner 728x90 Container */
+[id^="container-728x90-"] {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.1), rgba(76, 29, 149, 0.1)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  min-height: 90px !important;
+}
+
+/* Banner 300x250 Container */
+[id^="container-300x250-"] {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.1)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  min-height: 250px !important;
+  width: 300px !important;
+}
+
 /* Improve ad visibility */
-#container-ad1ee1816ddebc11a35ac98d10fb7142 * {
+#container-ad1ee1816ddebc11a35ac98d10fb7142 *,
+[id^="container-728x90-"] *,
+[id^="container-300x250-"] * {
   color: white !important;
   font-family: var(--font-sans) !important;
   text-decoration: none !important;
 }
 
-#container-ad1ee1816ddebc11a35ac98d10fb7142 a {
+#container-ad1ee1816ddebc11a35ac98d10fb7142 a,
+[id^="container-728x90-"] a,
+[id^="container-300x250-"] a {
   color: #fbbf24 !important;
   transition: color 0.3s ease !important;
   font-weight: 600 !important;
 }
 
-#container-ad1ee1816ddebc11a35ac98d10fb7142 a:hover {
+#container-ad1ee1816ddebc11a35ac98d10fb7142 a:hover,
+[id^="container-728x250-"] a:hover,
+[id^="container-300x250-"] a:hover {
   color: #f59e0b !important;
   text-decoration: underline !important;
 }
 
-#container-ad1ee1816ddebc11a35ac98d10fb7142 img {
+#container-ad1ee1816ddebc11a35ac98d10fb7142 img,
+[id^="container-728x90-"] img,
+[id^="container-300x250-"] img {
   border-radius: 8px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
   transition: transform 0.3s ease !important;
 }
 
-#container-ad1ee1816ddebc11a35ac98d10fb7142 img:hover {
+#container-ad1ee1816ddebc11a35ac98d10fb7142 img:hover,
+[id^="container-728x90-"] img:hover,
+[id^="container-300x250-"] img:hover {
   transform: scale(1.02) !important;
 }
 
 /* Ad label styling */
-#container-ad1ee1816ddebc11a35ac98d10fb7142 .sponsored,
-#container-ad1ee1816ddebc11a35ac98d10fb7142 .ad-label {
+.sponsored, .ad-label, [class*="sponsored"] {
   background: rgba(59, 130, 246, 0.3) !important;
   color: #93c5fd !important;
   padding: 4px 12px !important;
@@ -390,35 +412,6 @@ html {
   left: 100%;
 }
 
-/* Ad Position Indicators */
-.ad-position-header {
-  margin-top: 10px;
-  margin-bottom: 20px;
-}
-
-.ad-position-middle {
-  margin: 30px 0;
-}
-
-.ad-position-footer {
-  margin-top: 30px;
-  margin-bottom: 10px;
-}
-
-/* Loading State */
-.adsterra-banner .animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 /* Mobile Responsive Ads */
 @media (max-width: 768px) {
   #container-ad1ee1816ddebc11a35ac98d10fb7142 {
@@ -427,24 +420,22 @@ html {
     margin: 15px 0 !important;
   }
   
-  .ad-position-middle {
-    margin: 20px 0;
-  }
-}
-
-/* Dark Mode Adjustments */
-@media (prefers-color-scheme: dark) {
-  #container-ad1ee1816ddebc11a35ac98d10fb7142 {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5)) !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
+  [id^="container-300x250-"] {
+    width: 100% !important;
+    max-width: 300px !important;
+    min-height: 200px !important;
   }
 }
 
 /* Print Styles - Hide ads */
 @media print {
-  .adsterra-banner,
+  .adsterra-native-banner,
+  .adsterra-banner-728x90,
+  .adsterra-banner-300x250,
   [data-smartlink="true"],
-  #container-ad1ee1816ddebc11a35ac98d10fb7142 {
+  #container-ad1ee1816ddebc11a35ac98d10fb7142,
+  [id^="container-728x90-"],
+  [id^="container-300x250-"] {
     display: none !important;
   }
 }

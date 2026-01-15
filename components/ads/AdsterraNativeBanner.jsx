@@ -1,78 +1,57 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useAdsterra } from '../../hooks/useAdsterra';
 
-export default function AdsterraNativeBanner({ position = 'middle' }) {
+export default function AdsterraNativeBanner({ position = 'header' }) {
   const { loadNativeBanner, adBlockDetected } = useAdsterra();
-  const containerRef = useRef(null);
-  const loadedRef = useRef(false);
 
   useEffect(() => {
-    if (loadedRef.current || adBlockDetected) return;
+    if (adBlockDetected) return;
 
-    const loadAd = async () => {
-      try {
-        await loadNativeBanner(position);
-        loadedRef.current = true;
-      } catch (error) {
-        console.error(`Failed to load banner at ${position}:`, error);
-      }
-    };
-
-    // Delay loading berdasarkan posisi
     const delays = {
       header: 500,
       middle: 3000,
-      footer: 7000
+      footer: 6000
     };
 
-    const timer = setTimeout(loadAd, delays[position] || 1000);
+    const timer = setTimeout(() => {
+      loadNativeBanner(position);
+    }, delays[position] || 1000);
+
     return () => clearTimeout(timer);
   }, [position, loadNativeBanner, adBlockDetected]);
 
-  // Fallback content jika adblock terdeteksi
   if (adBlockDetected) {
     return (
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-6 text-center my-4">
-        <div className="inline-flex items-center gap-2 bg-gray-700/50 px-4 py-2 rounded-full mb-3">
+      <div className="ad-support-message bg-gradient-to-r from-gray-800/50 to-gray-900/50 p-4 rounded-lg my-4 text-center border border-gray-700/30">
+        <div className="inline-flex items-center gap-2 bg-gray-700/50 px-3 py-1 rounded-full mb-2">
           <span className="text-yellow-400">✨</span>
-          <span className="text-gray-300 text-sm">Sponsored Content</span>
+          <span className="text-gray-300 text-sm">Support Us</span>
         </div>
-        <h4 className="text-white font-semibold mb-2">
-          Support Our Free Service
-        </h4>
-        <p className="text-gray-400 text-sm mb-3">
-          Please consider disabling AdBlock to help us provide free content
+        <p className="text-gray-400 text-sm">
+          Please consider disabling AdBlock to help us provide free movies
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm"
-        >
-          Refresh Page
-        </button>
       </div>
     );
   }
 
   return (
     <div 
-      ref={containerRef}
-      className={`adsterra-banner ad-position-${position} my-4`}
+      className={`adsterra-native-banner ad-position-${position} my-4`}
       data-ad-position={position}
       data-ad-type="native-banner"
     >
-      {/* Container akan diisi oleh script Adsterra */}
       <div 
         id="container-ad1ee1816ddebc11a35ac98d10fb7142"
-        className="min-h-[250px] flex items-center justify-center bg-gradient-to-r from-purple-900/10 to-blue-900/10 rounded-lg animate-pulse"
+        className="min-h-[90px] md:min-h-[250px] flex items-center justify-center bg-gradient-to-r from-purple-900/10 to-blue-900/10 rounded-lg"
       >
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-purple-600/20 px-4 py-2 rounded-full mb-3">
+        <div className="text-center p-4">
+          <div className="inline-flex items-center gap-2 bg-purple-600/20 px-3 py-1 rounded-full mb-2">
             <span className="text-purple-400">📢</span>
-            <span className="text-purple-300 text-sm">Advertisement</span>
+            <span className="text-purple-300 text-xs md:text-sm">Advertisement</span>
           </div>
-          <p className="text-gray-400 text-sm">Loading advertisement...</p>
+          <p className="text-gray-400 text-xs md:text-sm">Loading ad...</p>
         </div>
       </div>
     </div>

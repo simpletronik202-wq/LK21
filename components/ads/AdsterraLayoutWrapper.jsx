@@ -4,20 +4,15 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAdsterra } from '../../hooks/useAdsterra';
 import AdsterraNativeBanner from './AdsterraNativeBanner';
-import AdsterraSmartLink from './AdsterraSmartLink';
-import AdPopupHandler from './AdPopupHandler';
+import AdsterraBanner728x90 from './AdsterraBanner728x90';
+import AdsterraBanner300x250 from './AdsterraBanner300x250';
 
 export default function AdsterraLayoutWrapper({ children }) {
   const pathname = usePathname();
-  const { 
-    adBlockDetected, 
-    initializeAds, 
-    adsLoaded,
-    redirectToSmartLink 
-  } = useAdsterra();
+  const { adBlockDetected, initializeAds, deviceType } = useAdsterra();
 
   useEffect(() => {
-    // Inisialisasi ads setelah komponen mount
+    // Inisialisasi ads setelah 1 detik
     const timer = setTimeout(() => {
       initializeAds();
     }, 1000);
@@ -25,102 +20,87 @@ export default function AdsterraLayoutWrapper({ children }) {
     return () => clearTimeout(timer);
   }, [initializeAds]);
 
-  // Handle route changes
-  useEffect(() => {
-    if (adsLoaded) {
-      // Reload ads pada navigasi (kecuali untuk halaman tertentu)
-      const excludedPaths = ['/', '/login', '/register'];
-      if (!excludedPaths.includes(pathname)) {
-        setTimeout(() => {
-          initializeAds();
-        }, 500);
-      }
-    }
-  }, [pathname, adsLoaded, initializeAds]);
+  // Skip ads di halaman tertentu
+  if (['/login', '/register', '/admin'].some(path => pathname.startsWith(path))) {
+    return <>{children}</>;
+  }
+
+  const isDetailPage = pathname.startsWith('/movie/') || pathname.startsWith('/tv/');
+  const isHomePage = pathname === '/';
+  const isSearchPage = pathname.startsWith('/search');
 
   return (
     <>
-      {/* Banner di Header */}
-      <div className="w-full bg-gradient-to-r from-purple-900/20 to-blue-900/20 py-2">
-        <div className="max-w-7xl mx-auto px-4">
-          <AdsterraNativeBanner position="header" />
-        </div>
-      </div>
-
-      {/* Konten utama */}
-      {children}
-
-      {/* Banner di tengah konten */}
-      <div className="my-8">
-        <AdsterraNativeBanner position="middle" />
-      </div>
-
-      {/* CTA Section dengan SmartLink */}
-      <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 py-8 my-8 rounded-xl">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">
-            ⚡ Download Aplikasi Premium
-          </h3>
-          <p className="text-gray-300 mb-6">
-            Akses semua film tanpa iklan dengan resolusi 4K
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <AdsterraSmartLink
-              variant="primary"
-              onClick={() => redirectToSmartLink()}
-            >
-              🎬 Download Sekarang (GRATIS)
-            </AdsterraSmartLink>
-            <AdsterraSmartLink
-              variant="secondary"
-              onClick={() => redirectToSmartLink()}
-            >
-              📱 Versi Android
-            </AdsterraSmartLink>
-            <AdsterraSmartLink
-              variant="success"
-              onClick={() => redirectToSmartLink()}
-            >
-              🍎 Versi iOS
-            </AdsterraSmartLink>
+      {/* Header Banner - 728x90 (Desktop only) */}
+      {deviceType === 'desktop' && (isHomePage || isDetailPage) && (
+        <div className="w-full bg-gradient-to-r from-blue-900/10 to-purple-900/10 py-2">
+          <div className="max-w-7xl mx-auto px-4">
+            <AdsterraBanner728x90 position="top" />
           </div>
-          <p className="text-gray-400 text-sm mt-4">
-            📦 Size: 45MB • ⭐ Rating: 4.8 • 👥 1M+ Downloads
-          </p>
         </div>
+      )}
+
+      {/* Native Banner Header */}
+      <div className="w-full">
+        <AdsterraNativeBanner position="header" />
       </div>
 
-      {/* Banner sebelum footer */}
+      {/* Main Content */}
+      <div className="min-h-screen">
+        {children}
+      </div>
+
+      {/* Banner 300x250 di antara konten (untuk detail pages) */}
+      {isDetailPage && (
+        <div className="my-8 flex justify-center">
+          <AdsterraBanner300x250 position="sidebar" />
+        </div>
+      )}
+
+      {/* Native Banner Middle (untuk detail pages) */}
+      {isDetailPage && (
+        <div className="my-8">
+          <AdsterraNativeBanner position="middle" />
+        </div>
+      )}
+
+      {/* Bottom Banner - 728x90 (Desktop only) */}
+      {deviceType === 'desktop' && (isHomePage || isSearchPage) && (
+        <div className="mt-8">
+          <AdsterraBanner728x90 position="bottom" />
+        </div>
+      )}
+
+      {/* Native Banner Footer */}
       <div className="mt-8">
         <AdsterraNativeBanner position="footer" />
       </div>
 
-      {/* Popup Handler */}
-      <AdPopupHandler />
-
       {/* AdBlock Warning */}
       {adBlockDetected && (
-        <div className="fixed bottom-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-lg max-w-sm z-50">
+        <div className="fixed bottom-4 right-4 bg-gradient-to-r from-red-600 to-orange-600 text-white p-4 rounded-lg shadow-xl max-w-sm z-50 border border-red-500/30">
           <div className="flex items-start gap-3">
-            <span className="text-xl">⚠️</span>
+            <span className="text-xl mt-1">⚠️</span>
             <div>
-              <p className="font-bold">AdBlock Terdeteksi</p>
-              <p className="text-sm mt-1">
-                Dukung kami dengan menonaktifkan AdBlock untuk akses konten gratis
+              <p className="font-bold">AdBlock Detected</p>
+              <p className="text-sm mt-1 opacity-90">
+                We rely on ads to provide free movies. Please consider whitelisting us.
               </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="mt-2 bg-white text-red-600 px-3 py-1 rounded text-sm font-semibold"
-              >
-                Refresh Halaman
-              </button>
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm transition"
+                >
+                  Reload
+                </button>
+                <button
+                  onClick={() => localStorage.setItem('hide_adblock_warning', 'true')}
+                  className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded text-sm transition"
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => localStorage.setItem('adblock_warning_shown', 'true')}
-              className="text-white hover:text-gray-200"
-            >
-              ✕
-            </button>
           </div>
         </div>
       )}

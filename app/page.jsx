@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { FaHome, FaFilm, FaTv, FaSearch, FaStar, FaUsers, FaGlobe, FaUser, FaCalendar, FaTrophy, FaDownload, FaMobileAlt, FaApple, FaWindows } from 'react-icons/fa';
-import SmartLinkWrapper from '../components/ads/SmartLinkWrapper';
+import AdsterraSmartLink from '../components/ads/AdsterraSmartLink';
 
 export default function About() {
   return (
@@ -37,9 +37,9 @@ export default function About() {
                   <span>👥 1M+ Downloads</span>
                 </div>
               </div>
-              <SmartLinkWrapper variant="success" className="whitespace-nowrap">
+              <AdsterraSmartLink variant="success" className="whitespace-nowrap">
                 <FaDownload /> Download Free
-              </SmartLinkWrapper>
+              </AdsterraSmartLink>
             </div>
           </div>
           
@@ -97,12 +97,12 @@ export default function About() {
                   Get 5x faster streaming, background playback, and exclusive content
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
-                  <SmartLinkWrapper variant="primary">
+                  <AdsterraSmartLink variant="primary">
                     <FaMobileAlt /> Android APK (v2.5.1)
-                  </SmartLinkWrapper>
-                  <SmartLinkWrapper variant="secondary">
+                  </AdsterraSmartLink>
+                  <AdsterraSmartLink variant="secondary">
                     <FaApple /> iOS Version
-                  </SmartLinkWrapper>
+                  </AdsterraSmartLink>
                 </div>
                 <p className="text-gray-400 text-sm mt-4">
                   🔥 Limited Time: Free premium trial for 7 days
@@ -133,9 +133,9 @@ export default function About() {
                       Download our mobile app for better viewing experience
                     </p>
                   </div>
-                  <SmartLinkWrapper variant="success" className="whitespace-nowrap">
+                  <AdsterraSmartLink variant="success" className="whitespace-nowrap">
                     <FaDownload /> Get Mobile App
-                  </SmartLinkWrapper>
+                  </AdsterraSmartLink>
                 </div>
               </div>
 
@@ -186,7 +186,7 @@ export default function About() {
               </p>
 
               <p>
-                The archives include special sections for significant years in cinema history, such as 1939 (often called "Hollywood's Greatest Year"), 1975 (the birth of the modern blockbuster), and 1999 (a landmark year for independent and mainstream cinema). Each archive page includes historical context, notable trends, award winners, and cultural impact analysis.
+                The archives include special sections for significant years in cinema history, such as 1939 (often called "Hollywood's Greatest Year"), 1975 (the birth of the modern blockbuster), and 1999 (a landmark year for independent and mainstream cinema). Each archive page includes historical context, notable trends, award winners, dan cultural impact analysis.
               </p>
 
               <h3 className="text-2xl font-semibold text-blue-300 mb-4">Ratings, Rankings, and User Reviews</h3>
@@ -218,9 +218,9 @@ export default function About() {
                       Enhanced experience with our desktop app for Windows
                     </p>
                   </div>
-                  <SmartLinkWrapper variant="warning">
+                  <AdsterraSmartLink variant="warning">
                     <FaWindows /> Windows Desktop App
-                  </SmartLinkWrapper>
+                  </AdsterraSmartLink>
                 </div>
               </div>
 
@@ -294,14 +294,14 @@ export default function About() {
                 Download our app now and get access to exclusive features, faster streaming, and ad-free experience
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <SmartLinkWrapper variant="primary" className="text-lg px-8 py-4">
+                <AdsterraSmartLink variant="primary" className="text-lg px-8 py-4">
                   <FaDownload className="inline mr-2" />
                   Download Premium App (FREE)
-                </SmartLinkWrapper>
-                <SmartLinkWrapper variant="secondary" className="text-lg px-8 py-4">
+                </AdsterraSmartLink>
+                <AdsterraSmartLink variant="secondary" className="text-lg px-8 py-4">
                   <FaMobileAlt className="inline mr-2" />
                   Android APK Download
-                </SmartLinkWrapper>
+                </AdsterraSmartLink>
               </div>
               <p className="text-gray-400 text-sm mt-6">
                 ⚡ Instant Download • 🔒 100% Safe • 📱 Compatible with all devices
@@ -373,14 +373,14 @@ export default function About() {
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <SmartLinkWrapper variant="success" className="px-8 py-4">
+                  <AdsterraSmartLink variant="success" className="px-8 py-4">
                     <FaMobileAlt className="inline mr-2" />
                     Download App
-                  </SmartLinkWrapper>
-                  <SmartLinkWrapper variant="warning" className="px-8 py-4">
+                  </AdsterraSmartLink>
+                  <AdsterraSmartLink variant="warning" className="px-8 py-4">
                     <FaWindows className="inline mr-2" />
                     PC Version
-                  </SmartLinkWrapper>
+                  </AdsterraSmartLink>
                 </div>
               </div>
             </div>
@@ -415,18 +415,18 @@ export default function About() {
               </div>
               
               <div className="flex flex-wrap justify-center gap-4">
-                <SmartLinkWrapper variant="success" className="px-10 py-5 text-lg">
+                <AdsterraSmartLink variant="success" className="px-10 py-5 text-lg">
                   <FaDownload className="inline mr-2" />
                   DOWNLOAD NOW (FREE)
-                </SmartLinkWrapper>
-                <SmartLinkWrapper variant="warning" className="px-10 py-5 text-lg">
+                </AdsterraSmartLink>
+                <AdsterraSmartLink variant="warning" className="px-10 py-5 text-lg">
                   <FaMobileAlt className="inline mr-2" />
                   ANDROID APK
-                </SmartLinkWrapper>
-                <SmartLinkWrapper variant="primary" className="px-10 py-5 text-lg">
+                </AdsterraSmartLink>
+                <AdsterraSmartLink variant="primary" className="px-10 py-5 text-lg">
                   <FaApple className="inline mr-2" />
                   iOS VERSION
-                </SmartLinkWrapper>
+                </AdsterraSmartLink>
               </div>
               
               <div className="mt-8 flex flex-wrap justify-center gap-6 text-gray-400">
@@ -458,9 +458,9 @@ export default function About() {
               <Link href="/tv-show/popular" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center gap-2">
                 <FaTv /> Browse TV Series Database
               </Link>
-              <SmartLinkWrapper variant="success" className="px-8 py-4 text-lg">
+              <AdsterraSmartLink variant="success" className="px-8 py-4 text-lg">
                 <FaDownload /> Download Premium App
-              </SmartLinkWrapper>
+              </AdsterraSmartLink>
             </div>
             <p className="mt-8 text-gray-400 max-w-3xl mx-auto text-justify">
               <strong>LK21</strong> - Your ultimate resource for movie information, TV series details, actor profiles, streaming guides, and cinematic discovery. Whether you're researching film history, planning your viewing schedule, or simply exploring the vast world of cinema, we provide the comprehensive database, accurate information, and intuitive tools you need to enhance your movie-watching experience and deepen your understanding of film as an art form and cultural phenomenon.
@@ -471,12 +471,12 @@ export default function About() {
       
       {/* Floating Download Button untuk Mobile */}
       <div className="fixed bottom-6 right-6 z-40 md:hidden">
-        <SmartLinkWrapper
+        <AdsterraSmartLink
           className="shadow-2xl animate-bounce"
           showConfirmation={false}
         >
           <FaDownload className="text-xl" />
-        </SmartLinkWrapper>
+        </AdsterraSmartLink>
       </div>
       
       {/* Floating Banner untuk Desktop */}
@@ -487,9 +487,9 @@ export default function About() {
             <div>
               <h4 className="font-bold mb-1">Mobile App Available</h4>
               <p className="text-sm text-gray-300 mb-3">Better experience on our app</p>
-              <SmartLinkWrapper variant="success" className="text-sm px-4 py-2">
+              <AdsterraSmartLink variant="success" className="text-sm px-4 py-2">
                 Download Now
-              </SmartLinkWrapper>
+              </AdsterraSmartLink>
             </div>
             <button className="text-gray-400 hover:text-white" onClick={(e) => e.target.closest('.fixed').style.display = 'none'}>
               ✕

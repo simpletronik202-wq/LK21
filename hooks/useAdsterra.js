@@ -1,226 +1,211 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { adsterraConfig, getRandomSmartLink } from '../utils/adsterraConfig';
+import { adsterraConfig, getRandomSmartLink, getPageType, shouldShowAd } from '../utils/adsterraConfig';
 
 export const useAdsterra = () => {
   const [adBlockDetected, setAdBlockDetected] = useState(false);
-  const [smartLinkIndex, setSmartLinkIndex] = useState(0);
+  const [deviceType, setDeviceType] = useState('desktop');
+  const [pageType, setPageType] = useState('home');
   const [adsLoaded, setAdsLoaded] = useState(false);
-  const [userConsent, setUserConsent] = useState(null);
-  const [impressionCount, setImpressionCount] = useState({
-    banner: 0,
-    smartlink: 0,
-    lastReset: Date.now()
-  });
   
-  const adScriptsLoaded = useRef({
-    nativeBanner: false,
-    socialBar: false,
-    popunder: false
-  });
+  const adScriptsLoaded = useRef(new Set());
+
+  // Deteksi device type
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setDeviceType(width < 768 ? 'mobile' : width < 1024 ? 'tablet' : 'desktop');
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Deteksi page type
+  useEffect(() => {
+    const updatePageType = () => {
+      setPageType(getPageType(window.location.pathname));
+    };
+    
+    updatePageType();
+    window.addEventListener('popstate', updatePageType);
+    return () => window.removeEventListener('popstate', updatePageType);
+  }, []);
 
   // Deteksi AdBlock
   useEffect(() => {
+    if (!adsterraConfig.settings.adBlockDetection) return;
+
     const detectAdBlock = () => {
-      try {
-        const ad = document.createElement('div');
-        ad.innerHTML = '&nbsp;';
-        ad.className = 'ad-box';
-        ad.style.position = 'absolute';
-        ad.style.left = '-9999px';
-        ad.style.top = '-9999px';
-        ad.style.height = '1px';
-        document.body.appendChild(ad);
-        
-        setTimeout(() => {
-          const isBlocked = ad.offsetHeight === 0;
-          setAdBlockDetected(isBlocked);
-          
-          if (isBlocked) {
-            console.warn('AdBlock terdeteksi, ads akan dimatikan.');
-            // Berikan opsi kepada user
-            localStorage.setItem('adblock_warning_shown', 'true');
-          }
-          
-          document.body.removeChild(ad);
-        }, 100);
-      } catch (error) {
-        console.error('Error detecting adblock:', error);
-      }
+      const testAd = document.createElement('div');
+      testAd.innerHTML = '&nbsp;';
+      testAd.className = 'ad-test';
+      testAd.style.cssText = 'position: absolute; left: -9999px; top: -9999px; height: 1px; width: 1px;';
+      document.body.appendChild(testAd);
+      
+      setTimeout(() => {
+        const isBlocked = testAd.offsetHeight === 0;
+        setAdBlockDetected(isBlocked);
+        document.body.removeChild(testAd);
+      }, 100);
     };
 
-    // Cek apakah user sudah disable adblock warning
-    const warningShown = localStorage.getItem('adblock_warning_shown');
-    if (!warningShown) {
-      detectAdBlock();
-    }
-  }, []);
-
-  // Reset impression count setiap jam
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setImpressionCount({
-        banner: 0,
-        smartlink: 0,
-        lastReset: Date.now()
-      });
-    }, 3600000); // 1 jam
-
-    return () => clearInterval(interval);
+    detectAdBlock();
   }, []);
 
   // Load script helper
   const loadAdScript = useCallback((src, options = {}) => {
     return new Promise((resolve, reject) => {
-      // Cek frequency cap
-      if (options.type === 'banner' && impressionCount.banner >= adsterraConfig.settings.frequencyCap.bannerPerHour) {
-        console.log('Frequency cap reached for banners');
-        reject(new Error('Frequency cap reached'));
+      if (adBlockDetected) {
+        reject(new Error('AdBlock detected'));
         return;
       }
 
-      // Cek apakah script sudah diload
-      const scriptId = src.split('/').pop().split('.')[0];
-      if (adScriptsLoaded.current[scriptId]) {
+      if (adScriptsLoaded.current.has(src)) {
         resolve();
+        return;
+      }
+
+      // Cek apakah iklan ini boleh ditampilkan di halaman ini
+      if (!shouldShowAd(options.adType, deviceType, pageType)) {
+        reject(new Error(`Ad type ${options.adType} not allowed on ${pageType} page`));
         return;
       }
 
       const script = document.createElement('script');
       script.src = src;
-      script.async = options.async !== false;
-      script.defer = options.defer !== false;
+      script.async = true;
       
-      // Tambahkan atribut untuk menghindari deteksi adblock
-      script.setAttribute('data-cfasync', 'false');
-      script.setAttribute('data-adsterra', 'true');
-      script.setAttribute('type', 'text/javascript');
-      
-      if (options.id) {
-        script.id = options.id;
+      if (src.includes('fundingfashioned.com')) {
+        script.setAttribute('data-cfasync', 'false');
+        script.setAttribute('data-adsterra', 'true');
+      }
+
+      if (options.config) {
+        const configScript = document.createElement('script');
+        configScript.textContent = `atOptions = ${JSON.stringify(options.config)}`;
+        document.head.appendChild(configScript);
       }
 
       script.onload = () => {
-        adScriptsLoaded.current[scriptId] = true;
-        if (options.type === 'banner') {
-          setImpressionCount(prev => ({
-            ...prev,
-            banner: prev.banner + 1
-          }));
-        }
+        adScriptsLoaded.current.add(src);
+        
+        // Update ad count
+        const currentCount = parseInt(sessionStorage.getItem(`ad_count_${pageType}`) || '0');
+        sessionStorage.setItem(`ad_count_${pageType}`, (currentCount + 1).toString());
+        
         resolve();
       };
 
-      script.onerror = (error) => {
-        console.error(`Failed to load ad script: ${src}`, error);
-        reject(error);
+      script.onerror = () => {
+        console.error(`Failed to load script: ${src}`);
+        reject(new Error(`Script load failed: ${src}`));
       };
 
-      // Delay loading untuk UX
       setTimeout(() => {
-        if (adBlockDetected) {
-          reject(new Error('AdBlock detected'));
-          return;
-        }
-        
         document.head.appendChild(script);
       }, options.delay || 0);
     });
-  }, [adBlockDetected, impressionCount]);
+  }, [adBlockDetected, deviceType, pageType]);
 
   // Load Native Banner
-  const loadNativeBanner = useCallback(async (position = 'middle') => {
-    if (!adsterraConfig.nativeBanner.enabled || adBlockDetected) {
-      return false;
-    }
+  const loadNativeBanner = useCallback(async (position = 'header') => {
+    if (!adsterraConfig.nativeBanner.enabled) return false;
 
     try {
-      const positionConfig = adsterraConfig.nativeBanner.positions[position];
-      if (!positionConfig || !positionConfig.enabled) {
-        return false;
-      }
-
-      // Tunggu elemen target tersedia
-      await new Promise((resolve) => {
-        const checkElement = () => {
-          const target = document.querySelector(positionConfig.selector);
-          if (target) {
-            resolve(target);
-          } else {
-            setTimeout(checkElement, 100);
-          }
-        };
-        checkElement();
-      });
-
-      // Load script
       await loadAdScript(adsterraConfig.nativeBanner.scriptSrc, {
-        delay: 2000,
-        type: 'banner'
+        adType: `native-${position}`,
+        delay: position === 'header' ? 500 : 3000
       });
-
       return true;
     } catch (error) {
-      console.error(`Error loading native banner at ${position}:`, error);
+      console.error(`Failed to load native banner at ${position}:`, error);
       return false;
     }
-  }, [adBlockDetected, loadAdScript]);
+  }, [loadAdScript]);
+
+  // Load Banner 728x90
+  const loadBanner728x90 = useCallback(async (position = 'top') => {
+    if (!adsterraConfig.banner728x90.enabled) return false;
+    
+    // Jangan tampilkan 728x90 di mobile
+    if (deviceType === 'mobile') return false;
+
+    try {
+      await loadAdScript(adsterraConfig.banner728x90.scriptSrc, {
+        adType: '728x90',
+        config: adsterraConfig.banner728x90.config,
+        delay: position === 'top' ? 1000 : 5000
+      });
+      return true;
+    } catch (error) {
+      console.error(`Failed to load 728x90 banner at ${position}:`, error);
+      return false;
+    }
+  }, [loadAdScript, deviceType]);
+
+  // Load Banner 300x250
+  const loadBanner300x250 = useCallback(async (position = 'betweenContent') => {
+    if (!adsterraConfig.banner300x250.enabled) return false;
+
+    try {
+      await loadAdScript(adsterraConfig.banner300x250.scriptSrc, {
+        adType: '300x250',
+        config: adsterraConfig.banner300x250.config,
+        delay: 2000
+      });
+      return true;
+    } catch (error) {
+      console.error(`Failed to load 300x250 banner at ${position}:`, error);
+      return false;
+    }
+  }, [loadAdScript]);
 
   // Load Social Bar
   const loadSocialBar = useCallback(async () => {
-    if (!adsterraConfig.socialBar.enabled || adBlockDetected) {
-      return false;
-    }
-
-    // Cek halaman yang dikecualikan
+    if (!adsterraConfig.socialBar.enabled) return false;
+    
     const currentPath = window.location.pathname;
-    if (adsterraConfig.socialBar.excludePages.includes(currentPath)) {
-      return false;
-    }
+    
+    // Cek apakah di halaman yang diperbolehkan
+    const isAllowed = adsterraConfig.socialBar.onlyOnPages.some(
+      page => currentPath.startsWith(page)
+    );
+    
+    if (!isAllowed) return false;
+    
+    // Cek apakah di halaman yang dikecualikan
+    const isExcluded = adsterraConfig.socialBar.excludePages.some(
+      page => currentPath.startsWith(page)
+    );
+    
+    if (isExcluded) return false;
 
     try {
       await loadAdScript(adsterraConfig.socialBar.scriptSrc, {
+        adType: 'social-bar',
         delay: adsterraConfig.socialBar.loadDelay
       });
       return true;
     } catch (error) {
-      console.error('Error loading social bar:', error);
+      console.error('Failed to load social bar:', error);
       return false;
     }
-  }, [adBlockDetected, loadAdScript]);
+  }, [loadAdScript]);
 
-  // Redirect ke SmartLink
+  // Redirect to SmartLink
   const redirectToSmartLink = useCallback(() => {
     if (adBlockDetected) {
-      alert('Please disable AdBlock to access premium content');
-      return false;
-    }
-
-    // Cek frequency cap
-    if (impressionCount.smartlink >= adsterraConfig.settings.frequencyCap.smartlinkPerSession) {
-      alert('Maximum downloads reached for this session');
+      alert('Please disable AdBlock to download');
       return false;
     }
 
     const link = getRandomSmartLink();
-    
-    // Buka di tab baru
-    const newWindow = window.open(link, '_blank', 'noopener,noreferrer');
-    
-    // Fallback jika popup diblokir
-    if (!newWindow || newWindow.closed) {
-      window.location.href = link;
-    }
-
-    // Update impression count
-    setImpressionCount(prev => ({
-      ...prev,
-      smartlink: prev.smartlink + 1
-    }));
-
+    window.open(link, '_blank', 'noopener,noreferrer');
     return true;
-  }, [adBlockDetected, impressionCount.smartlink]);
+  }, [adBlockDetected]);
 
-  // Initialize semua ads
+  // Initialize all ads based on page type
   const initializeAds = useCallback(async () => {
     if (adBlockDetected) {
       console.log('Ads disabled due to AdBlock');
@@ -228,30 +213,58 @@ export const useAdsterra = () => {
     }
 
     try {
-      // Load banner di posisi berbeda dengan delay
-      setTimeout(() => loadNativeBanner('header'), 1000);
-      setTimeout(() => loadNativeBanner('middle'), 5000);
-      setTimeout(() => loadNativeBanner('footer'), 10000);
-      
-      // Load social bar
-      setTimeout(() => loadSocialBar(), 8000);
+      // Reset ad count untuk halaman ini
+      sessionStorage.setItem(`ad_count_${pageType}`, '0');
+
+      // Load ads berdasarkan page type
+      switch (pageType) {
+        case 'home':
+          await loadNativeBanner('header');
+          await loadBanner728x90('top');
+          setTimeout(() => loadBanner300x250('betweenContent'), 2000);
+          setTimeout(() => loadBanner728x90('bottom'), 4000);
+          break;
+          
+        case 'detail':
+          await loadNativeBanner('header');
+          setTimeout(() => loadBanner300x250('sidebar'), 1500);
+          setTimeout(() => loadNativeBanner('middle'), 3000);
+          setTimeout(() => loadSocialBar(), 8000);
+          setTimeout(() => loadNativeBanner('footer'), 10000);
+          break;
+          
+        case 'search':
+          await loadNativeBanner('header');
+          setTimeout(() => loadBanner728x90('bottom'), 3000);
+          break;
+          
+        default:
+          await loadNativeBanner('header');
+          setTimeout(() => loadNativeBanner('footer'), 3000);
+      }
 
       setAdsLoaded(true);
     } catch (error) {
       console.error('Error initializing ads:', error);
     }
-  }, [adBlockDetected, loadNativeBanner, loadSocialBar]);
+  }, [adBlockDetected, pageType, loadNativeBanner, loadBanner728x90, loadBanner300x250, loadSocialBar]);
 
   return {
+    // State
     adBlockDetected,
     adsLoaded,
-    userConsent,
-    setUserConsent,
-    impressionCount,
+    deviceType,
+    pageType,
+    
+    // Actions
     loadNativeBanner,
+    loadBanner728x90,
+    loadBanner300x250,
     loadSocialBar,
     redirectToSmartLink,
     initializeAds,
+    
+    // Helpers
     getRandomSmartLink
   };
 };
